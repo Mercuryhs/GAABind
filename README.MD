@@ -2,9 +2,9 @@
 Code and trained model for our paper **GAABind: A Geometry-Aware Attention-Based
 Network for Accurate Protein-Ligand Binding Pose
 and Binding Affinity Prediction**
+
 ![Overall FrameWork](Figure1_overall.png)
 
-<br>
 
 ## Installation dependencies
 Our model is tested in Linux with the following packages:
@@ -15,12 +15,12 @@ Our model is tested in Linux with the following packages:
 - tqdm
 - os
 
-<br>
+
 
 ## Dataset
-The processed dataset can be downloaded from: 
+The processed dataset of PDBBind and SARS-CoV-2 main protease can be downloaded from the [google drive](https://drive.google.com/file/d/1uZDKhqBrNSvke29Wozq7TzwzwWYrzbU1/view?usp=drive_link).
 
-<br>
+
 
 ## Usage
 **Predict your own molecules with the trained model.**
@@ -60,7 +60,8 @@ python predict.py --data_dir [dataset_path] --save_path [save_path]
 ```shell
 python docking/docking.py --predict_path [save_path]
 ```
-<br>
+
+
 
 ## Reference
 ```
