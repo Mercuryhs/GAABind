@@ -1,15 +1,9 @@
 import torch
-from torch_geometric.loader import DataLoader
-
-from datetime import datetime
 import logging
-import sys
 import os
 import numpy as np
 import random
 import torch.nn.functional as F
-
-from torch_geometric.utils import to_dense_batch
 
 
 
@@ -44,30 +38,8 @@ def set_logger(save_path, name=None, print_on_screen=True):
         formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s')
         console.setFormatter(formatter)
         logging.getLogger('').addHandler(console)
-    # fh = logging.FileHandler(log_file, encoding='utf8')
-    # formatter = logging.Formatter('%(asctime)s | %(levelname)-8s | %(lineno)04d | %(message)s')
-    # fh.setFormatter(formatter)
-    # logging.getLogger('').addHandler(fh)
 
 
-def adjust_lr(args, now_update, total_update):
-    assert args.warmup_ratio > 0
-    warmup_updates = int(args.warmup_ratio * total_update)
-    max_lr = args.lr
-    end_learning_rate = args.end_learning_rate
-
-    if now_update <= warmup_updates:
-        warmup_factor = now_update / float(warmup_updates)
-        lr = warmup_factor * max_lr
-    elif now_update >= total_update:
-        lr = end_learning_rate
-    else:
-        warmup = warmup_updates
-        lr_range = max_lr - end_learning_rate
-        pct_remaining = 1 - (now_update - warmup) / (total_update - warmup)
-        lr = lr_range * pct_remaining ** args.power + end_learning_rate
-    
-    return lr
 
 
 
@@ -110,8 +82,6 @@ def Dock_loss(data, pred, dist_threshold=8.0):
     pred_affi = pred[-1]
     affinity = infos['y'].to(pred_affi.device)
     affinity_loss = F.smooth_l1_loss(pred_affi.float(), affinity.float(), reduction="mean", beta=1.0)
-    #affinity_loss = affinity_loss * 0.05
 
-    #loss = distance_loss + holo_distance_loss + affinity_loss
 
     return distance_loss, holo_distance_loss, distance_mask, holo_distance_mask, affinity_loss

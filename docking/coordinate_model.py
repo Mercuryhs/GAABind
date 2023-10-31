@@ -6,6 +6,7 @@ from rdkit import Chem
 import pickle
 import argparse
 import warnings
+import os
 
 warnings.filterwarnings(action="ignore")
 
@@ -87,7 +88,8 @@ def add_coord(mol, xyz):
     return mol
 
 
-def single_docking(input_path, output_ligand_path):
+def single_docking(input_path, output_path):
+    os.makedirs(output_path, exist_ok=True)
     content = pd.read_pickle(input_path)
     (
         mol,
@@ -120,26 +122,27 @@ def single_docking(input_path, output_ligand_path):
             pred_affi = pred_affi_list[i]
 
 
-    pred_affi = round(pred_affi.item(), 2)
-    print(f"{pocket}-{smi}-Predicted_Affinity:{pred_affi}")
     mol = Chem.RemoveHs(mol)
     mol = set_coord(mol, bst_predict_coords)
+    mol = add_coord(mol, holo_center_coords.numpy())
 
-    if output_ligand_path is not None:
-        mol = add_coord(mol, holo_center_coords.numpy())
-        Chem.MolToMolFile(mol, output_ligand_path)
-
+    output_ligand_path = os.path.join(output_path, 'ligand.sdf')
+    Chem.MolToMolFile(mol, output_ligand_path)
+    output_affinity_path = open(os.path.join(output_path, 'pred_affinity.txt'), 'w+')
+    print(pred_affi.item(), file=output_affinity_path)
+    output_affinity_path.close()
+    
     return True
 
 
 if __name__ == "__main__":
-    #########torch.set_num_threads(1)
+    torch.set_num_threads(1)
     torch.manual_seed(0)
     parser = argparse.ArgumentParser(description="Docking with gradient")
     parser.add_argument("--input", type=str, help="input file.")
     parser.add_argument(
-        "--output-ligand", type=str, default=None, help="output ligand sdf path."
+        "--output-path", type=str, default=None, help="output path."
     )
     args = parser.parse_args()
 
-    single_docking(args.input, args.output_ligand)
+    single_docking(args.input, args.output_path)

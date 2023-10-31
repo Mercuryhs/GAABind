@@ -2,29 +2,52 @@
 Code and trained model for our paper **GAABind: A Geometry-Aware Attention-Based
 Network for Accurate Protein-Ligand Binding Pose
 and Binding Affinity Prediction**
-
 ![Overall FrameWork](Figure1_overall.png)
 
+<br>
 
-## Installation dependencies
-Our model is tested in Linux with the following packages:
-- PyTorch == 1.12.0
-- RDkit == 2021.09.5
-- Numpy == 1.23.5
-- Pandas == 1.5.2
-- tqdm
-- os
+## Installation
+You can set up the environment using **Anaconda** or **Docker**.
+### Using Anaconda:
+```bash
+git clone https://github.com/Mercuryhs/GAABind.git
+conda create --name gaabind python=3.8
+conda activate gaabind
+conda install pytorch==1.12.0 cudatoolkit=11.3 -c pytorch
+pip install torch-scatter==2.0.9 torch-sparse==0.6.14 torch-cluster torch-geometric==2.0.4 -f https://data.pyg.org/whl/torch-1.12.0+cu113.html
+pip install numpy pandas scikit-learn==1.2.1 tqdm rdkit-pypi==2021.9.5.1 nglview
+```
+### Using Docker image:
+```bash
+git clone https://github.com/Mercuryhs/GAABind.git
+docker pull mercuryyy/gaabind:latest
+docker run --shm-size 8G --gpus all -it -v $PWD/GAABind:/GAABind gaabind:latest /bin/bash
+```
+### Build Docker image from scratch:
+```bash
+git clone https://github.com/Mercuryhs/GAABind.git
+cd GAABind
+docker build -t gaabind:latest .
+docker run --shm-size 8G --gpus all -it -v $PWD:/GAABind gaabind:latest /bin/bash
+```
 
-
+<br>
 
 ## Dataset
-The processed dataset of PDBBind and SARS-CoV-2 main protease can be downloaded from the [google drive](https://drive.google.com/file/d/1uZDKhqBrNSvke29Wozq7TzwzwWYrzbU1/view?usp=drive_link).
+The processed dataset can be downloaded from [google drive](https://drive.google.com/file/d/17XuLhUN_cv6yLV_Tl-MyryBI5dUhp6lr/view?usp=share_link).
 
+<br>
 
+## Running GAABind on your own dataset
+We provided both jupyter notebook tutorials and python scripts for running GAABind on your own dataset.
 
-## Usage
-**Predict your own molecules with the trained model.**
-### Step 1: Preprocess the dataset using the following format:
+### 1. Usage examples can be seen directly in the `jupyter notebooks` included in the repo:
+```bash
+GAABind_example.ipynb
+```
+
+### 2. Predict your own molecules with the trained model in batch mode:
+#### Step 1: Preprocess the dataset using the following format:
 ```shell
 example_data/
 ├── Mpro-x11271
@@ -41,27 +64,38 @@ The ligand file can be in .sdf, .mol2, or .mol format, or you can provide the li
 A_166_GLU
 A_49_MET
 A_143_GLY
-A_181_PHE
-A_145_CYS
 ...
 ```
 **Run the following command to preprocess the dataset**
-```shell
-python preprocess.py --data_path [dataset_path]
+```bash
+python preprocess.py --input_path [raw_path] --output_path [processed_path]
 ```
 
-
-### Step 2: Predict the dataset using the following command
-```shell
-
-python predict.py --data_dir [dataset_path] --save_path [save_path] 
+#### Step 2: Predict the dataset using the following command
+```bash
+python predict.py --input_path [processed_path] --output_path [predict_path] 
 ```
-### Step 3: Generate the ligand pose 
-```shell
-python docking/docking.py --predict_path [save_path]
+Then you can find the prediction results in the `predict_path`.
+
+<br>
+
+## Reproducing paper numbers
+Download and unzip the dataset, then place it into the `dataset` directory.
+
+Running the following command to reproduce the evaluation result on `CASF2016`:
+```bash
+python inference.py --input_path dataset/PDBBind/processed --complex_list dataset/PDBBind/test.txt --output_path casf2016_predict_result --batch_size 3
+```
+Running the following command to reproduce the evaluation result on `Mpro dataset`:
+```bash
+python inference.py --input_path dataset/Mpro/processed --complex_list dataset/Mpro/test.txt --output_path mpro_predict_result --batch_size 2
 ```
 
-
+## Training a model yourself
+You can also retraining the model yourself by using the following command:
+```bash
+OMP_NUM_THREADS=8 CUDA_VISIBLE_DEVICES='0,1' torchrun --nproc_per_node=2 train.py --data_dir dataset/PDBBind
+```
 
 ## Reference
 ```

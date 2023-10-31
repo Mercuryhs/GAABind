@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import ipdb
+
 
 class Mol2Pair(nn.Module):
     def __init__(self, pair_dim, hidden_dim):

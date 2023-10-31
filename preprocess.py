@@ -3,29 +3,22 @@ from tqdm import tqdm
 import pickle
 import argparse
 from glob import glob
-import warnings
 from multiprocessing import Pool
 
-from feature_utils import get_ligand_info, get_protein_info, get_chem_feats, read_mol, get_coords
+from data.feature_utils import get_ligand_info, get_protein_info, get_chem_feats, read_mol, get_coords
 
-
+import warnings
 warnings.filterwarnings('ignore')
 
 
-
-def process_single(data_dir):
-    name = os.path.basename(data_dir)
-    save_dir = os.path.dirname(data_dir)
-    
-    save_path = f'{save_dir}/{name}.pkl'
-    if os.path.exists(save_path): 
-        return True
+def process_single(items):
+    input_path, output_path = items
     new_data = {}
-    mol_file = glob(f'{data_dir}/ligand.*')[0]
-    pro_file = f'{data_dir}/receptor.pdb'
-    pocket_file = f'{data_dir}/pocket.txt'
+    name = os.path.basename(input_path)
+    mol_file = glob(f'{input_path}/ligand.*')[0]
+    pro_file = f'{input_path}/receptor.pdb'
+    pocket_file = f'{input_path}/pocket.txt'
     poc_res = open(pocket_file).read().splitlines()
-    
 
     input_mol = read_mol(mol_file)
     try:
@@ -44,9 +37,8 @@ def process_single(data_dir):
                      'poc_bonds': poc_edges, 'poc_bonds_feats': poc_bonds, 'mol': mol})
     
     new_data = get_chem_feats(new_data)
-    
-    
-    f_out = open(save_path, 'wb')
+
+    f_out = open(output_path, 'wb')
     pickle.dump(new_data, f_out)
     f_out.close()
     return True
@@ -56,12 +48,20 @@ def process_single(data_dir):
 def main():
     
     parser = argparse.ArgumentParser(description='preprocess the dataset')
-    parser.add_argument('--data_path', type=str, default='example_data', help='path of dataset')
+    parser.add_argument('--input_path', type=str, default='example_data', help='input path of raw dataset')
+    parser.add_argument('--output_path', type=str, default='example_processed_data', help='output path of processed dataset')
     parser.add_argument('--threads', type=int, default=8, help='number of threads to use')
     args = parser.parse_args()
+    
+    if not os.path.exists(args.output_path):
+        os.makedirs(args.output_path, exist_ok=True)
 
-    data_list = list(glob(os.path.join(args.data_path, '*')))
-    with Pool(20) as pool:
+    input_data_list = os.listdir(args.input_path)
+    output_data_list = [os.path.join(args.output_path, f'{x}.pkl') for x in input_data_list]
+    input_data_list = [os.path.join(args.input_path, x) for x in input_data_list]
+    data_list = [(x, y) for x,y in zip(input_data_list, output_data_list)]
+    
+    with Pool(args.threads) as pool:
         for inner_output in tqdm(pool.imap(process_single, data_list), total=len(data_list)):
             if not inner_output:
                 print("fail to process")
