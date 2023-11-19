@@ -13,6 +13,7 @@ You can set up the environment using **Anaconda** or **Docker**.
 git clone https://github.com/Mercuryhs/GAABind.git
 cd GAABind
 conda env create -f environment.yml
+conda activate gaabind
 ```
 ### Using Docker image:
 ```bash
