@@ -9,6 +9,7 @@ and Binding Affinity Prediction**
 ## Installation
 You can set up the environment using **Anaconda** or **Docker**.
 ### Using Anaconda:
+1. set up environment step by step: 
 ```bash
 git clone https://github.com/Mercuryhs/GAABind.git
 conda create --name gaabind python=3.8
@@ -16,6 +17,10 @@ conda activate gaabind
 conda install pytorch==1.12.0 cudatoolkit=11.3 -c pytorch
 pip install torch-scatter==2.0.9 torch-sparse==0.6.14 torch-cluster torch-geometric==2.0.4 -f https://data.pyg.org/whl/torch-1.12.0+cu113.html
 pip install numpy pandas scikit-learn==1.2.1 tqdm rdkit-pypi==2021.9.5.1 nglview
+```
+2. set up environment by directly using `environment.yml`:
+```
+conda env create -f environment.yml
 ```
 ### Using Docker image:
 ```bash
@@ -34,7 +39,10 @@ docker run --shm-size 8G --gpus all -it -v $PWD:/GAABind gaabind:latest /bin/bas
 <br>
 
 ## Dataset
-The processed dataset can be downloaded from [google drive](https://drive.google.com/file/d/17XuLhUN_cv6yLV_Tl-MyryBI5dUhp6lr/view?usp=share_link).
+The processed dataset can be downloaded from [zenodo](https://zenodo.org/records/10155792). If you want to train GAABind from scratch, or reproduce the GAABind results, you can:
+
+1. download dataset from [zenodo](https://zenodo.org/records/10155792);
+2. unzip the zip file and place it into data_path  `dataset`.
 
 <br>
 
